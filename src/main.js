@@ -2,8 +2,6 @@ import * as THREE from "three";
 import "./style.css";
 
 const sceneRoot = document.querySelector("#scene-root");
-const npcState = document.querySelector("#npc-state");
-const playerState = document.querySelector("#player-state");
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#d8e4ef");
@@ -102,30 +100,29 @@ function buildPlayer() {
 function buildNpc() {
   const group = new THREE.Group();
 
-  const robe = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.6, 0.86, 2.1, 32),
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.9, 2.4, 0.9),
     new THREE.MeshStandardMaterial({ color: "#66a3ff" })
   );
-  robe.castShadow = true;
+  body.castShadow = true;
 
-  const face = new THREE.Mesh(
-    new THREE.SphereGeometry(0.35, 24, 24),
-    new THREE.MeshStandardMaterial({ color: "#f8dfc5" })
+  const head = new THREE.Mesh(
+    new THREE.BoxGeometry(0.68, 0.68, 0.68),
+    new THREE.MeshStandardMaterial({ color: "#d7e7ff" })
   );
-  face.position.y = 1.32;
-  face.castShadow = true;
+  head.position.y = 1.58;
+  head.castShadow = true;
 
-  const halo = new THREE.Mesh(
-    new THREE.TorusGeometry(0.5, 0.06, 12, 36),
-    new THREE.MeshStandardMaterial({ color: "#fff6c4", emissive: "#ffe49c" })
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 0.18, 1.2),
+    new THREE.MeshStandardMaterial({ color: "#34506c" })
   );
-  halo.rotation.x = Math.PI / 2;
-  halo.position.y = 1.72;
+  base.position.y = -1.18;
 
   const label = makeLabelSprite("NPC", "#2d6cdf");
-  label.position.set(0, 2.45, 0);
+  label.position.set(0, 2.5, 0);
 
-  group.add(robe, face, halo, label);
+  group.add(body, head, base, label);
   group.position.set(0, 1.4, -1.5);
   scene.add(group);
 
@@ -139,17 +136,15 @@ const playerVelocity = new THREE.Vector3();
 const cameraOffset = new THREE.Vector3(0, 5.5, 7.5);
 const npcBaseY = npc.position.y;
 
-function updateHud(distance) {
-  playerState.textContent = `x ${player.position.x.toFixed(1)} | z ${player.position.z.toFixed(1)}`;
-
+function updateNpcVisual(distance) {
   if (distance < 2.4) {
-    npcState.textContent = "El NPC te detecta y se prepara para interactuar.";
     npc.children[0].material.color.set("#ff8a3d");
+    npc.children[1].material.color.set("#fff1c9");
     return;
   }
 
-  npcState.textContent = "El NPC esta en espera.";
   npc.children[0].material.color.set("#66a3ff");
+  npc.children[1].material.color.set("#d7e7ff");
 }
 
 function onResize() {
@@ -185,11 +180,11 @@ function tick() {
   npc.position.y = npcBaseY + Math.sin(performance.now() * 0.002) * 0.06;
 
   const distance = player.position.distanceTo(npc.position);
-  updateHud(distance);
+  updateNpcVisual(distance);
 
   renderer.render(scene, camera);
   window.requestAnimationFrame(tick);
 }
 
-updateHud(player.position.distanceTo(npc.position));
+updateNpcVisual(player.position.distanceTo(npc.position));
 tick();
