@@ -86,12 +86,6 @@ ul {
 }
 
 .student-name {
-  margin-bottom: 10px;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.metric {
   display: flex;
   justify-content: space-between;
   gap: 12px;

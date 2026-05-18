@@ -1,20 +1,18 @@
 # LingGames NPC Sandbox
 
-Sandbox para experimentar con NPCs que reaccionan de forma diferente segun las metricas de cada alumno.
+Sandbox minimo para probar interaccion basica entre un player controlable y un NPC.
 
 ## Incluye
 
-- Escena base en `three.js` para pruebas visuales.
-- Alumnos seleccionables con metricas iniciales.
-- NPCs con estilos distintos de respuesta.
-- Motor simple de reaccion separado para evolucionar hacia IA mas rica.
+- Escena base en `three.js`.
+- Un player manejable con `W A S D`.
+- Un NPC con reaccion simple por proximidad.
+- Estructura ligera para iterar rapido.
 
 ## Estructura
 
-- `src/main.js`: escena, seleccion de alumnos y render UI.
-- `src/data/students.js`: perfiles y metricas de alumnos.
-- `src/sim/npcProfiles.js`: definicion de NPCs.
-- `src/sim/reactionEngine.js`: reglas iniciales de reaccion.
+- `src/main.js`: escena, movimiento del player y estado del NPC.
+- `src/style.css`: layout y HUD minima.
 
 ## Uso local
 
@@ -25,9 +23,9 @@ npm run dev
 
 ## Siguientes pasos
 
-1. Sustituir reglas fijas por prompts o arboles de decision.
-2. Anadir mas metricas como asistencia, progreso por unidad o comportamiento.
-3. Conectar cada NPC a objetivos concretos del aula o del juego.
+1. Anadir interaccion al pulsar una tecla cerca del NPC.
+2. Conectar respuestas dinamicas del NPC a un sistema de estados.
+3. Reintroducir metricas solo cuando la base de movimiento e interaccion ya este estable.
 
 ## GitHub
 
