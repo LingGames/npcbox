@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LingGames NPC Sandbox</title>
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <aside class="hud">
+        <div class="panel">
+          <p class="eyebrow">LingGames</p>
+          <h1>NPC Sandbox</h1>
+          <p class="intro">
+            Espacio de pruebas para NPCs que reaccionan distinto segun las
+            metricas de cada alumno.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h2>Alumno Activo</h2>
+          <div id="student-details"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Respuesta NPC</h2>
+          <div id="npc-reactions"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Como Probar</h2>
+          <ul>
+            <li>Haz click en un alumno dentro de la escena.</li>
+            <li>Observa como cambian las respuestas de los NPCs.</li>
+            <li>Edita las metricas en <code>src/data/students.js</code>.</li>
+          </ul>
+        </div>
+      </aside>
+      <main id="scene-root"></main>
+    </div>
+  </body>
+  </html>
