@@ -16,6 +16,16 @@ body {
   min-height: 100vh;
 }
 
+#scene-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.35), transparent 22%),
+    radial-gradient(circle at 85% 15%, rgba(103, 163, 255, 0.16), transparent 20%);
+}
+
 #scene-root {
   position: relative;
   width: 100vw;
@@ -27,4 +37,80 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: min(320px, calc(100vw - 36px));
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 40px rgba(24, 33, 43, 0.14);
+  z-index: 2;
+}
+
+.overlay h1,
+.overlay p {
+  margin: 0;
+}
+
+.overlay h1 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.overlay p {
+  color: rgba(24, 33, 43, 0.72);
+  font-size: 0.88rem;
+}
+
+.overlay label,
+.overlay select {
+  display: block;
+  width: 100%;
+}
+
+.overlay label {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.overlay select {
+  padding: 10px 12px;
+  border: 1px solid rgba(24, 33, 43, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #18212b;
+}
+
+.metrics {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(24, 33, 43, 0.08);
+  font-size: 0.92rem;
+}
+
+.metric-row:last-child {
+  border-bottom: 0;
+}
+
+.overlay-status {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: rgba(24, 33, 43, 0.62);
 }
