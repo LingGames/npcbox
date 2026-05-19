@@ -1,23 +1,37 @@
-import * as THREE from "three";
+﻿import * as THREE from "three";
 import "./style.css";
 import { publicStudents } from "./publicStudents.js";
-import { deriveNpcProfile, getStudentRefFromUrl, loadStudentMetrics } from "./studentMetrics.js";
+import {
+  LingGamesHandoffRequiredError,
+  deriveNpcProfile,
+  getStudentRefFromUrl,
+  getTargetStudentCodeFromUrl,
+  getDeutschBaseUrl,
+  loadStudentCatalog,
+  loadStudentMetrics
+} from "./studentMetrics.js";
 
 const sceneRoot = document.querySelector("#scene-root");
 
 const overlay = document.createElement("section");
 overlay.className = "overlay";
 overlay.innerHTML = `
-  <h1>Metricas del alumno</h1>
-  <p>Seleccion por alias publico. Nunca se expone el id real.</p>
-  <label for="student-select">Alumno</label>
+  <h1>NPC Sandbox</h1>
+  <p>Sesion segura con deutsch para adaptar el NPC sin exponer ids reales.</p>
+  <label for="student-select">Modo</label>
   <select id="student-select"></select>
+  <label id="target-student-label" for="target-student-trigger">Alumno objetivo</label>
+  <button id="target-student-trigger" type="button" class="target-trigger">Elegir alumno</button>
+  <div id="target-student-grid" class="target-grid" hidden></div>
   <div class="metrics" id="metrics-panel"></div>
-  <div class="overlay-status" id="metrics-status">Cargando metricas...</div>
+  <div class="overlay-status" id="metrics-status">Cargando perfil...</div>
 `;
 sceneRoot.appendChild(overlay);
 
 const studentSelect = overlay.querySelector("#student-select");
+const targetStudentLabel = overlay.querySelector("#target-student-label");
+const targetStudentTrigger = overlay.querySelector("#target-student-trigger");
+const targetStudentGrid = overlay.querySelector("#target-student-grid");
 const metricsPanel = overlay.querySelector("#metrics-panel");
 const metricsStatus = overlay.querySelector("#metrics-status");
 
@@ -116,21 +130,10 @@ function buildPlayer() {
   head.position.y = 1.34;
   head.castShadow = true;
 
-  const marker = new THREE.Mesh(
-    new THREE.BoxGeometry(0.2, 0.2, 0.5),
-    new THREE.MeshStandardMaterial({ color: "#324f70" })
-  );
-  marker.position.set(0, 0.5, 0.52);
-
   const label = makeLabelSprite("Player", "#18212b");
   label.position.set(0, 2.3, 0);
 
-  group.add(
-            body, 
-            head, 
-            // marker, 
-            label
-          );
+  group.add(body, head, label);
   group.position.set(0, 1.1, 3);
   scene.add(group);
 
@@ -179,39 +182,88 @@ const keys = new Set();
 const playerVelocity = new THREE.Vector3();
 const cameraOffset = new THREE.Vector3(0, 5.5, 7.5);
 const npcBaseY = npc.position.y;
-const initialStudentRef = getStudentRefFromUrl() || publicStudents[0]?.studentRef || "alpha-sam";
+const requestedStudentRef = getStudentRefFromUrl();
+const initialStudentRef =
+  requestedStudentRef === "alpha-sam" ||
+  requestedStudentRef === "bravo-son" ||
+  requestedStudentRef === "charlie-priv"
+    ? requestedStudentRef
+    : publicStudents[0]?.studentRef || "player-session";
 let selectedStudent =
   publicStudents.find((student) => student.studentRef === initialStudentRef) ??
   publicStudents[0];
+let targetStudentCode = getTargetStudentCodeFromUrl();
+let catalogStudents = [];
 let npcProfile = deriveNpcProfile({
-  studentRef: "local-demo",
-  label: "Demo local",
+  studentRef: "player-session",
+  label: "Sesion actual",
   attendancePct: null,
   punctualityAvgLateMinutes: null,
   practicesPct: null,
+  practicesCount: 0,
   gradesPct: null,
-  points: null,
+  mxp: null,
+  pointsClass: null,
+  pointsTotal: null,
+  supportNeed: "medium",
+  npcTone: "balanced",
+  challengeLevel: "medium",
+  engagement: "unknown",
+  confidence: "unknown",
+  reliability: "unknown",
+  pace: "steady",
+  recommendedStrategy: "Waiting for metrics.",
   level: 0
 });
 
-function formatMetric(value, suffix = "", digits = 0) {
-  if (value == null) {
+function formatMetric(value, suffix = "", digits = 1) {
+  if (value == null || !Number.isFinite(Number(value))) {
     return "—";
   }
 
   return `${Number(value).toFixed(digits)}${suffix}`;
 }
 
+function sampleCatalogStudents(students, size = 5) {
+  const copy = Array.isArray(students) ? [...students] : [];
+
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+
+  return copy.slice(0, Math.max(0, size));
+}
+
+function getSelectedCatalogStudent() {
+  return catalogStudents.find((student) => student.code === targetStudentCode) || null;
+}
+
 function renderMetrics(metrics) {
+  const selectedCatalogStudent = getSelectedCatalogStudent();
   const rows = [
-    ["Alias", metrics.label ?? selectedStudent.label],
-    ["Ref", metrics.studentRef],
-    ["Asistencia", formatMetric(metrics.attendancePct, "%", 1)],
-    ["Retardo prom.", formatMetric(metrics.punctualityAvgLateMinutes, " min", 1)],
-    ["Practicas", formatMetric(metrics.practicesPct, "%", 1)],
+    ["Modo", selectedStudent.label],
+    ["Alumno objetivo", selectedCatalogStudent ? `${selectedCatalogStudent.code} · ${selectedCatalogStudent.day}` : targetStudentCode ?? "Mi sesion"],
+    ["Origen", metrics.source],
+    ["Asistencia", formatMetric(metrics.attendancePct, "%")],
+    ["Puntualidad", formatMetric(metrics.punctualityAvgLateMinutes, " min")],
+    ["Practicas", formatMetric(metrics.practicesPct, "%")],
+    ["Tareas medidas", metrics.practicesCount ?? 0],
     ["Calificacion", formatMetric(metrics.gradesPct, "", 1)],
-    ["Puntos", formatMetric(metrics.points, "", 1)],
-    ["Nivel", formatMetric(metrics.level)]
+    ["MXP", formatMetric(metrics.mxp, "", 1)],
+    ["Puntos clase", formatMetric(metrics.pointsClass, "", 1)],
+    ["Puntos totales", formatMetric(metrics.pointsTotal, "", 1)],
+    ["Nivel actual", metrics.level ?? 0],
+    ["Siguiente nivel", metrics.nextLevel ?? "—"],
+    ["Support need", metrics.supportNeed],
+    ["NPC tone", metrics.npcTone],
+    ["Challenge", metrics.challengeLevel],
+    ["Engagement", metrics.engagement],
+    ["Confidence", metrics.confidence],
+    ["Reliability", metrics.reliability],
+    ["Pace", metrics.pace],
+    ["Missing for next", metrics.missingForNext?.join(", ") || "—"],
+    ["Strategy", metrics.recommendedStrategy]
   ];
 
   metricsPanel.innerHTML = rows
@@ -221,30 +273,145 @@ function renderMetrics(metrics) {
     )
     .join("");
 
-  metricsStatus.textContent =
-    metrics.source === "deutsch"
-      ? "Fuente: endpoint de deutsch"
-      : "Fuente: demo local";
+  const warnings = Array.isArray(metrics.warnings) ? metrics.warnings : [];
+  metricsStatus.textContent = warnings.length
+    ? `Perfil cargado con advertencias: ${warnings[0]}`
+    : metrics.source === "deutsch"
+      ? "Fuente: player-access + npc-metrics"
+      : "Fuente: mock local";
 }
 
-function syncSelectedStudentInUrl(studentRef) {
+function syncStateInUrl() {
   const url = new URL(window.location.href);
-  url.searchParams.set("studentRef", studentRef);
+  url.searchParams.set("studentRef", selectedStudent.studentRef);
+
+  if (targetStudentCode) {
+    url.searchParams.set("targetStudentCode", String(targetStudentCode));
+  } else {
+    url.searchParams.delete("targetStudentCode");
+  }
+
   window.history.replaceState({}, "", url);
 }
 
-async function refreshSelectedStudent() {
-  metricsStatus.textContent = "Cargando metricas...";
+function syncTargetSelectorVisibility() {
+  const visible = selectedStudent.mode === "session";
+  targetStudentTrigger.style.display = visible ? "block" : "none";
+  targetStudentLabel.style.display = visible ? "block" : "none";
+  targetStudentGrid.hidden = !visible;
+  if (!visible) {
+    targetStudentGrid.classList.remove("open");
+  }
+}
+
+function updateTargetTriggerLabel() {
+  const selectedCatalogStudent = getSelectedCatalogStudent();
+
+  if (!selectedCatalogStudent) {
+    targetStudentTrigger.textContent = "Elegir alumno";
+    return;
+  }
+
+  targetStudentTrigger.textContent = `${selectedCatalogStudent.code} · ${selectedCatalogStudent.day}`;
+}
+
+function renderTargetStudentGrid() {
+  if (!catalogStudents.length) {
+    targetStudentGrid.innerHTML = '<div class="target-grid-empty">Sin acceso al catalogo o sin alumnos disponibles.</div>';
+    updateTargetTriggerLabel();
+    return;
+  }
+
+  targetStudentGrid.innerHTML = catalogStudents
+    .map((student) => {
+      const active = student.code === targetStudentCode ? " active" : "";
+      return `
+        <button type="button" class="target-card${active}" data-code="${student.code}">
+          <span class="target-card-code">${student.code}</span>
+          <span class="target-card-name">Perfil protegido</span>
+          <span class="target-card-day">${student.day}</span>
+        </button>
+      `;
+    })
+    .join("");
+
+  for (const button of targetStudentGrid.querySelectorAll(".target-card")) {
+    button.addEventListener("click", () => {
+      targetStudentCode = button.dataset.code || null;
+      syncStateInUrl();
+      renderTargetStudentGrid();
+      updateTargetTriggerLabel();
+      targetStudentGrid.classList.remove("open");
+      void refreshSelectedStudent();
+    });
+  }
+
+  updateTargetTriggerLabel();
+}
+
+async function ensureCatalogLoaded() {
+  if (selectedStudent.mode !== "session") {
+    catalogStudents = [];
+    renderTargetStudentGrid();
+    return;
+  }
+
+  const baseUrl = getDeutschBaseUrl();
+  const storedToken = window.sessionStorage.getItem("linggames.accessToken") || "";
+
+  if (!baseUrl || !storedToken) {
+    catalogStudents = [];
+    renderTargetStudentGrid();
+    return;
+  }
 
   try {
-    const metrics = await loadStudentMetrics(
-      selectedStudent.studentRef,
-      selectedStudent.label
-    );
+    const loadedStudents = await loadStudentCatalog(baseUrl, storedToken);
+    catalogStudents = sampleCatalogStudents(loadedStudents, 5);
+
+    if (targetStudentCode && !catalogStudents.some((student) => student.code === targetStudentCode)) {
+      targetStudentCode = null;
+    }
+
+    if (!targetStudentCode && catalogStudents[0]) {
+      targetStudentCode = catalogStudents[0].code;
+      syncStateInUrl();
+    }
+  } catch (error) {
+    if (error instanceof LingGamesHandoffRequiredError) {
+      window.location.href = error.handoffUrl;
+      return;
+    }
+
+    catalogStudents = [];
+  }
+
+  renderTargetStudentGrid();
+}
+
+async function refreshSelectedStudent() {
+  metricsStatus.textContent =
+    selectedStudent.mode === "session"
+      ? "Conectando con deutsch..."
+      : "Cargando mock local...";
+
+  try {
+    const metrics = await loadStudentMetrics(selectedStudent, selectedStudent.label, {
+      targetStudentCode
+    });
+
+    await ensureCatalogLoaded();
     renderMetrics(metrics);
     applyNpcProfile(deriveNpcProfile(metrics));
-  } catch {
-    metricsStatus.textContent = "No se pudieron cargar las metricas.";
+  } catch (error) {
+    if (error instanceof LingGamesHandoffRequiredError) {
+      metricsStatus.textContent = "Redirigiendo a deutsch para validar la sesion...";
+      window.location.href = error.handoffUrl;
+      return;
+    }
+
+    const message = error instanceof Error ? error.message : "Unknown error";
+    metricsStatus.textContent = `No se pudo cargar el perfil: ${message}`;
   }
 }
 
@@ -267,8 +434,25 @@ function initStudentSelect() {
     }
 
     selectedStudent = nextStudent;
-    syncSelectedStudentInUrl(selectedStudent.studentRef);
+    syncTargetSelectorVisibility();
+    syncStateInUrl();
     void refreshSelectedStudent();
+  });
+}
+
+function initTargetSelector() {
+  targetStudentTrigger.addEventListener("click", () => {
+    if (selectedStudent.mode !== "session") {
+      return;
+    }
+
+    targetStudentGrid.classList.toggle("open");
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!overlay.contains(event.target)) {
+      targetStudentGrid.classList.remove("open");
+    }
   });
 }
 
@@ -331,7 +515,10 @@ function tick() {
 
 applyNpcProfile(npcProfile);
 initStudentSelect();
+initTargetSelector();
+syncTargetSelectorVisibility();
 void refreshSelectedStudent();
 
 updateNpcVisual(player.position.distanceTo(npc.position));
 tick();
+

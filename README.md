@@ -7,15 +7,15 @@ Sandbox minimo para probar interaccion basica entre un player controlable y un N
 - Escena base en `three.js`.
 - Un player manejable con `W A S D`.
 - Un NPC con reaccion simple por proximidad.
-- GUI en escena con dropdown para elegir alumnos por alias publico.
-- Adaptador para cargar metricas desde `deutsch` usando un `studentRef` opaco.
-- Estructura ligera para iterar rapido.
+- GUI en escena con selector de modo.
+- Integracion segura con `deutsch` usando `player-access` y `npc-metrics`.
+- Fallbacks mock para iterar sin sesion real.
 
 ## Estructura
 
 - `src/main.js`: escena, movimiento del player y estado del NPC.
-- `src/publicStudents.js`: roster publico de alumnos seleccionables.
-- `src/studentMetrics.js`: carga y normalizacion de metricas externas.
+- `src/publicStudents.js`: modos disponibles (`Mi sesion actual` y mocks locales).
+- `src/studentMetrics.js`: acceso a `deutsch`, normalizacion y derivacion del perfil del NPC.
 - `src/style.css`: layout minimo de escena completa.
 
 ## Uso local
@@ -30,63 +30,35 @@ npm run dev
 Usa `.env` con:
 
 ```bash
-VITE_DEUTSCH_METRICS_URL=http://localhost:3000/api/linggames/student-metrics
-VITE_DEUTSCH_STUDENT_REF=tu-student-ref-opaco
+VITE_DEUTSCH_BASE_URL=http://localhost:3000
 ```
 
-Tambien puedes pasar el alias por URL:
+## Flujo seguro con `deutsch`
 
-```bash
-http://localhost:5173/?studentRef=tu-student-ref-opaco
-```
+1. LingGames llama `GET /api/linggames/player-access` con `credentials: include`.
+2. `deutsch` valida la sesion del alumno y devuelve:
+   - `studentKey` opaco
+   - `accessToken` corto
+3. LingGames llama `GET /api/internal/linggames/npc-metrics` con `Authorization: Bearer <accessToken>`.
+4. `deutsch` responde un perfil seguro para NPCs sin exponer `studentId` real.
 
-## Integracion segura con `deutsch`
+## Requisitos para probarlo
 
-No conviene hashear el `studentId` dentro de LingGames si el secreto vive en el navegador. El cliente se puede inspeccionar y un hash simple de IDs numericos se puede enumerar.
+- Tener `deutsch` corriendo en `http://localhost:3000`.
+- Haber iniciado sesion en `deutsch` con el alumno en el mismo navegador.
+- Configurar en `deutsch`:
+  - `LINGGAMES_ALIAS_SECRET`
+  - `LINGGAMES_TOKEN_SECRET`
+  - `LINGGAMES_ALLOWED_ORIGIN=http://localhost:5173`
 
-La opcion mas sana es:
+## Modos disponibles
 
-1. `deutsch` genera un `studentRef` opaco y estable, por ejemplo un token aleatorio o un HMAC firmado en servidor.
-2. LingGames solo conoce ese `studentRef`.
-3. Un endpoint puente en `deutsch` recibe `studentRef`, resuelve el alumno real en servidor y devuelve solo las metricas necesarias.
-
-Payload minimo sugerido desde `deutsch`:
-
-```json
-{
-  "studentRef": "opaque-ref",
-  "level": {
-    "currentLevel": 3,
-    "resolvedInput": {
-      "attendancePct": 84,
-      "punctualityAvgLateMinutes": 2.5,
-      "practicesPct": 79,
-      "gradesPct": 81,
-      "points": 48
-    }
-  }
-}
-```
+- `Mi sesion actual`: usa la sesion real del alumno en `deutsch`.
+- `Alumno Alfa/Bravo/Charlie (mock)`: datos locales para iteracion rapida.
 
 ## Siguientes pasos
 
-1. Anadir interaccion al pulsar una tecla cerca del NPC.
-2. Crear en `deutsch` el endpoint puente por `studentRef`.
-3. Reemplazar la reaccion visual por dialogos o estados del NPC basados en metricas reales.
-
-## GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial NPC sandbox"
-git branch -M main
-git remote add origin <tu-url-de-github>
-git push -u origin main
-```
-
-Si Git te muestra un aviso de seguridad por propietario de carpeta, usa:
-
-```bash
-git config --global --add safe.directory D:/projects/games/LingGames
-```
+1. Anadir interaccion contextual al pulsar una tecla cerca del NPC.
+2. Convertir `recommendedStrategy` en ramas de dialogo.
+3. Reaccionar a `supportNeed`, `challengeLevel` y `pace` con conducta jugable real.
+4. Si el sandbox se despliega en otro dominio, registrar ese origen en `LINGGAMES_ALLOWED_ORIGIN`.

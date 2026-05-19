@@ -44,6 +44,8 @@ body {
   top: 18px;
   left: 18px;
   width: min(320px, calc(100vw - 36px));
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
   padding: 16px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.78);
@@ -88,6 +90,73 @@ body {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.9);
   color: #18212b;
+}
+
+.target-trigger {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(24, 33, 43, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #18212b;
+  text-align: left;
+  cursor: pointer;
+}
+
+.target-grid {
+  display: none;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.target-grid.open {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.target-card {
+  padding: 10px;
+  border: 1px solid rgba(24, 33, 43, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #18212b;
+  cursor: pointer;
+  text-align: left;
+}
+
+.target-card.active {
+  border-color: rgba(47, 108, 223, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(47, 108, 223, 0.18);
+}
+
+.target-card-code,
+.target-card-name,
+.target-card-day {
+  display: block;
+}
+
+.target-card-code {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.target-card-name {
+  font-size: 0.86rem;
+}
+
+.target-card-day {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: rgba(24, 33, 43, 0.62);
+  text-transform: uppercase;
+}
+
+.target-grid-empty {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(24, 33, 43, 0.68);
+  font-size: 0.82rem;
 }
 
 .metrics {

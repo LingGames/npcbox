@@ -1,0 +1,23 @@
+
+> linggames-npc-sandbox@0.1.0 dev
+> vite --host 0.0.0.0
+
+
+  [32m[1mVITE[22m v7.3.3[39m  [2mready in [0m[1m388[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.3.199:[1m5173[22m/[39m
+[2m19:21:57[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m19:21:57[22m [36m[1m[vite][22m[39m server restarted.
+[2m20:19:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/studentMetrics.js[22m
+[2m20:20:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
+[2m20:47:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/studentMetrics.js[22m
+[2m20:47:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
+[2m20:54:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/studentMetrics.js[22m
+[2m20:54:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
+[2m20:54:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/style.css[22m
+[2m21:04:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
+[2m21:13:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/studentMetrics.js[22m
+[2m21:15:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
+[2m21:15:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/style.css[22m
+[2m21:33:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
